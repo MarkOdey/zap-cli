@@ -4,12 +4,10 @@ var EventEmitter = require('events').EventEmitter;
 var q = require('q');
 
 var moment = require('moment');
-var MongoClient = require('mongodb').MongoClient;
-var mongoclient;
 
-MongoClient.connect('mongodb://localhost:27017/zap', function(err, mongocli) {
-  mongoclient = mongocli;
-});
+
+var MongoConnexion = require('../utils/MongoConnexion');
+
 
 
 
@@ -25,93 +23,90 @@ function Concat(file) {
 
 		var defer = q.defer();
 
-		if(mongoclient == undefined) {
-
-			console.log('mongoclient not ready.')
-			defer.resolve();
-			self.emit('resolve');
-			return defer.promise;
-			
-		}
-
-		var db = mongoclient.db("zap");
-
-		var dataCollection = db.collection('data');
-
-		//var data = dataCollection.findOne({ MIMEType : {$regex : ".video.*"}, weight : { $gt : Math.random(), $lt : Math.random()}}).then(function (doc) {
-
-		//var data = dataCollection.findOne({ weight : { $gt : Math.random(), $lt : Math.random()}})
-
-		var random = Math.random();
-
-		var data = dataCollection.find({ weight : { $gt : random, $lt : random+0.3 }}, { limit:2 }).toArray(function (err, docs) {
-
-	
-			if(docs == null) {
-
-				console.log('no data');
-				console.log(docs);
-				defer.resolve();
-				self.emit('resolve');
-				return defer.promise;
-
-			}
+		MongoConnexion.get().then(function (mongoclient) {
 
 
-			var file1 = docs[0];
-			var file2 = docs[1];
+			var db = mongoclient.db("zap");
+
+			var dataCollection = db.collection('data');
+
+			//var data = dataCollection.findOne({ MIMEType : {$regex : ".video.*"}, weight : { $gt : Math.random(), $lt : Math.random()}}).then(function (doc) {
+
+			//var data = dataCollection.findOne({ weight : { $gt : Math.random(), $lt : Math.random()}})
+
+			var random = Math.random();
+
+			var data = dataCollection.find({ weight : { $gt : random, $lt : random+0.3 }}, { limit:2 }).toArray(function (err, docs) {
+
+		
+				if(docs == null) {
+
+					console.log('no data');
+					console.log(docs);
+					defer.resolve();
+					self.emit('resolve');
+					return defer.promise;
+
+				}
 
 
-			if(file1 == undefined || file2 == undefined) {
-
-				self.emit('resolve');
-				defer.resolve();
-				return;
-			}
+				var file1 = docs[0];
+				var file2 = docs[1];
 
 
-			console.log(file1);
-			console.log(file2);
+				if(file1 == undefined || file2 == undefined) {
 
-			var filename = file1.FileName+file2.FileName;
-
-			filename = filename.replace(/\./g, "");
-
-
-		   this.ls = spawn('./action/mmcat', [ 
-		    						file1.SourceFile,
-		    						file2.SourceFile,
-		             				'../data/concat'+filename+'.mp4']);
+					self.emit('resolve');
+					defer.resolve();
+					return;
+				}
 
 
-			this.ls.stdout.on('data', (data) => {
+				console.log(file1);
+				console.log(file2);
 
-				console.log(`stdout: ${data}`);
-				//self.emit('resolve');
-				//defer.resolve();
+				var filename = file1.FileName+file2.FileName;
 
-			});
+				filename = filename.replace(/\./g, "");
 
-			this.ls.stderr.on('data', (data) => {
 
-				console.log(`error: ${data}`);
-				//self.emit('resolve');
-				//defer.resolve();
+			   this.ls = spawn('./action/mmcat', [ 
+			    						file1.SourceFile,
+			    						file2.SourceFile,
+			             				'../data/concat'+filename+'.mp4']);
 
-			});
 
-			ls.on('close', (code) => {
+				this.ls.stdout.on('data', (data) => {
 
-				console.log(`child process exited with code ${code}`);
-				self.emit('resolve');
-				defer.resolve();
+					console.log(`stdout: ${data}`);
+					//self.emit('resolve');
+					//defer.resolve();
+
+				});
+
+				this.ls.stderr.on('data', (data) => {
+
+					console.log(`error: ${data}`);
+					//self.emit('resolve');
+					//defer.resolve();
+
+				});
+
+				ls.on('close', (code) => {
+
+					console.log(`child process exited with code ${code}`);
+					self.emit('resolve');
+					defer.resolve();
+
+				});
+
+				
 
 			});
 
-			
+		})
 
-		});
-
+		
 		return defer.promise;
 
 	}

@@ -33,11 +33,6 @@ app.use(express.static('../'));
 //Add actions a Session can handle.
 Session.addAction(Play);
 
-
-
-
-
-
 var io = require('socket.io')(8080);
 
 console.log('instantiation of socket io');

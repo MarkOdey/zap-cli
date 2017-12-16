@@ -6,12 +6,7 @@ var Find = require('./find.js');
 
 var q = require('q');
 
-var moment = require('moment');
-var MongoClient = require('mongodb').MongoClient;
-var mongoclient;
-var dataCollection;
-
-
+var MongoConnexion = require('../utils/MongoConnexion');
 
 
 
@@ -25,8 +20,52 @@ function Convert(payload) {
 
 	}
 
+	var convert = function (file) {
 
-	this.run = function () {
+		var defer = q.defer();
+
+		console.log("Generating new file : " +file);
+
+		var convertedFile = '../memory/' + file + '.mp4';
+
+	    this.ls = spawn('ffmpeg', [ "-i", doc.SourceFile, '-y',
+	                            "-vcodec", "libx264",
+	                            "-crf", "23", 
+	                            "-preset", "ultrafast",
+	                            "-acodec", "aac",
+	                            "-strict", "experimental", 
+	                            "-ac", "2", 
+	                            "-ar", "44100", 
+	                            "-ab", "128k",
+	                            "-async", "1", convertedFile]);
+
+
+		this.ls.stdout.on('data', (data) => {
+
+			console.log(`stdout: ${data}`);
+
+		});
+
+		this.ls.stderr.on('data', (data) => {
+
+			console.log(`stderr: ${data}`);
+
+		});
+
+		ls.on('close', (code) => {
+
+
+			defer.resolve(convertFile);
+
+		});
+
+
+		return defer.promise;
+
+
+	}
+
+	this.run = function (payload) {
 
 		var defer = q.defer();
 
@@ -54,67 +93,39 @@ function Convert(payload) {
 
 
 		var random = Math.random();
-		var data = dataCollection.findOne({ MIMEType : {$regex : "video.*"}, 
-											weight : { $gt : random, $lt : random + 0.3}
+
+		MongoConnexion.get().then(function (mongoclient) {
+
+			var db = mongoclient.db("zap");
+
+			var dataCollection = db.collection('data');
+
+			var data = dataCollection.findOne({ MIMEType : {$regex : "video.*"}, 
+										weight : { $gt : random, $lt : random + 0.3}
 										}).then(function (doc) {
 
-			if(doc == null) {
+				if(doc == null) {
 
-				console.log('no data');
-				defer.resolve();
-				self.emit('resolve');
-				return defer.promise;
+					console.log('no data');
+					defer.resolve();
+					self.emit('resolve');
+					return defer.promise;
 
-			}
-
-			var file = doc.FileName.replace(/\.[^/.]+$/, '')+Math.floor(Math.random()*1000);
-
-			console.log("Generating new file : " +file);
-
-			console.log(doc);
-
-			var convertedFile = '../memory/' + file + '.mp4';
-
-		    this.ls = spawn('ffmpeg', [ "-i", doc.SourceFile, '-y',
-		                            "-vcodec", "libx264",
-		                            "-crf", "23", 
-		                            "-preset", "ultrafast",
-		                            "-acodec", "aac",
-		                            "-strict", "experimental", 
-		                            "-ac", "2", 
-		                            "-ar", "44100", 
-		                            "-ab", "128k",
-		                            "-async", "1", convertedFile]);
+				}
 
 
-			this.ls.stdout.on('data', (data) => {
+				var file = doc.FileName.replace(/\.[^/.]+$/, '')+Math.floor(Math.random()*1000);
 
-				console.log(`stdout: ${data}`);
+				console.log(doc);
 
-			});
+				convert(file).then(function() {
 
-			this.ls.stderr.on('data', (data) => {
+					console.log(`child process exited with code ${code}`);
+					self.emit('resolve');
+					defer.resolve();
 
-				console.log(`stderr: ${data}`);
+				});
 
-			});
-
-			ls.on('close', (code) => {
-
-
-				
-            var r = col.update({ SourceFile : metadata["SourceFile"] },
-                           { 
-                                $set : metadata
-                             }, 
-                           { 
-                                upsert : true 
-                            });
-
-
-				console.log(`child process exited with code ${code}`);
-				self.emit('resolve');
-				defer.resolve();
 
 			});
 

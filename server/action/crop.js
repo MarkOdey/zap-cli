@@ -7,12 +7,6 @@ var q = require('q');
 var Find = require('./find.js');
 
 var moment = require('moment');
-var MongoClient = require('mongodb').MongoClient;
-var mongoclient;
-
-MongoClient.connect('mongodb://localhost:27017/zap', function(err, mongocli) {
-  mongoclient = mongocli;
-});
 
 
 function Crop(file, start, duration) {

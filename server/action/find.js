@@ -3,21 +3,9 @@ const fs = require('fs');
 var q = require('q');
 
 var mime = require("mime");
-
-var MongoClient = require('mongodb').MongoClient;
-var mongoclient;
-var assert = require('assert');
 var EventEmitter = require('events').EventEmitter;
 
-const spawn = require('child_process').spawn;
-
-
-
-function getMetaData(url) {
-
-
-
-    EventEmitter.apply(this, arguments);
+var getMetaData = function() {
 
     var defer = q.defer();
 

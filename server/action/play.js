@@ -1,79 +1,73 @@
 
 
-var MongoClient = require('mongodb').MongoClient;
+var MongoConnexion = require('../utils/MongoConnexion');
 var q = require('q');
 
 
 var EventEmitter = require('events').EventEmitter;
-
-var mongoclient;
-
-MongoClient.connect('mongodb://localhost:27017/zap', function(err, mongocli) {
-  mongoclient = mongocli;
-
-  console.log('Mongo Client connected.')
-});
-
 
 
 function Play(data) {
 
     var self = this;
 
-
     this.data = data;
 
     this.run = function (socket) {
 
-		var defer = q.defer();
+    	var defer = q.defer();
 
-		var db = mongoclient.db("zap");
+    	MongoConnexion.get().then(function (mongoclient) {
 
-		var dataCollection = db.collection('data');
+			var db = mongoclient.db("zap");
 
-		console.log('Attempting to find an element.');
+			var dataCollection = db.collection('data');
 
-		//var data = dataCollection.findOne({ MIMEType : {$regex : ".video.*"}, weight : { $gt : Math.random(), $lt : Math.random()}}).then(function (doc) {
-		var query = {
-			weight : { $gt : Math.random(), $lt : Math.random()},
-			FileType : 'MP4'
-		}
+			console.log('Attempting to find an element.');
 
-		var dataQuery = dataCollection.findOne(query, function (err, data) {
+			//var data = dataCollection.findOne({ MIMEType : {$regex : ".video.*"}, weight : { $gt : Math.random(), $lt : Math.random()}}).then(function (doc) {
+			var query = {
+				weight : { $gt : Math.random(), $lt : Math.random()},
+				FileType : 'MP4'
+			}
 
-		    if(data == null) {
-		      console.log('no data');
-		      defer.resolve();
-		      self.emit('resolve');
-		      return defer.promise;
-		    }
+			var dataQuery = dataCollection.findOne(query, function (err, data) {
 
-		    console.log('Found an element :', data.SourceFile);
+			    if(data == null) {
+			      console.log('no data');
+			      defer.resolve();
+			      self.emit('resolve');
+			      return defer.promise;
+			    }
 
-		    console.log('Attempting to play a random file :');
+			    console.log('Found an element :', data.SourceFile);
 
-		    console.log('socket id' + socket.id);
+			    console.log('Attempting to play a random file :');
 
-		    socket.emit('play', data);
+			    console.log('socket id' + socket.id);
 
-		    socket.once('resolve', function () {
+			    socket.emit('play', data);
 
-
-				console.log('Resolving in play.js with :' + socket.id);
-
-				self.emit('resolve');
-
-				defer.resolve();
-
-				socket.removeAllListeners('resolve');
-
-		    });
+			    socket.once('resolve', function () {
 
 
-		});
+					console.log('Resolving in play.js with :' + socket.id);
+
+					self.emit('resolve');
+
+					defer.resolve();
+
+					socket.removeAllListeners('resolve');
+
+			    });
+
+
+			});
 
 
 
+
+    	});
 
 		return defer.promise;
 
