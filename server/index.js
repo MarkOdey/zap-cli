@@ -37,6 +37,7 @@ Session.addAction(Play);
 
 
 
+
 var io = require('socket.io')(8080);
 
 console.log('instantiation of socket io');
@@ -56,7 +57,7 @@ io.on('connection', function(socket){
 
 
 //We check if action specified.
-/*if(process.argv[2] != undefined) {
+if(process.argv[2] != undefined) {
 
 	console.log(process.argv[2]);
 	var Action = actions[process.argv[2]];
@@ -75,15 +76,12 @@ io.on('connection', function(socket){
 	}
 
 
-
-
 } else {
 
 
 }
 
 
-*/
 
 /*
 

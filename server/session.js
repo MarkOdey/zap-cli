@@ -1,4 +1,4 @@
-
+var explore = require('./action/explore.js');
 
 
 function Session(socket) {
@@ -8,8 +8,6 @@ function Session(socket) {
     this.socket = socket;
 
     var deleted = false;
-
-
 
     this.update = function () {
 
@@ -47,8 +45,14 @@ function Session(socket) {
 
                 console.log("resolving action for socket "+socket.id);
                 console.log('action');
+                setTimeout(function () {
+    
+                    self.update();
 
-                self.update();
+                }, 2000);
+
+
+
 
             });
 
@@ -66,6 +70,7 @@ function Session(socket) {
 
     });
 
+    //Interface for adding an action in the stack of actions.
     this.socket.on('run', function(data) {
 
         console.log(data);
@@ -74,7 +79,7 @@ function Session(socket) {
             
             var action;
 
-            eval("action="+data+";");
+            eval("action= new "+data+"();");
 
             console.log('Run action from terminal : ', action);
 
