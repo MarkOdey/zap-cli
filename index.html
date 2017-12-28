@@ -7,23 +7,9 @@
 
 
     
-    <script src="js/helper.js"></script>
     <script src="node_modules/socket.io-client/dist/socket.io.js"></script>
     
-
-    <script src="js/video.js"></script>
-    
-    <script src="js/terminal.js"></script>
-    <script src="js/read.js"></script>
-    <script src="js/write.js"></script>
-    <script src="js/concatenate.js"></script>
-    <script src="js/relation.js"></script>
-
-    <script src="js/text.js"></script>
-    <script src="js/image.js"></script>
-
-    <script src="js/emitter.js"></script>
-
+    <script src="dist/app.js"></script>
     <style>
 
 
@@ -65,77 +51,6 @@
         }
     </style>
 
-
-
-
-
-    <script src="js/mediator.js"></script>
-
-    <script>
-        
-          var socket = io('http://localhost:8080/');
-
-
-
-
-
-          socket.on('connected', function (data) {
-            	
-            	console.log("connected");
-            	var terminal = new Terminal();
-
-              
-          });
-
-          var elements = {
-            'Video' : Video,
-            'Image' : Image
-          }
-          
-          socket.on('play', function (data) {
-
-            console.log(data);
-
-            console.log('play');
-
-            var valid = false;
-
-            for(var i in elements) {
-
-                if(elements[i].validate(data)) {
-
-                    var element =  new elements[i](data);
-
-                    valid = true;
-
-                    element.run();
-
-                    element.once('resolve', function() {
-
-                        console.log('resolved');
-
-                        socket.emit('resolve');
-
-                    });
-
-                    break;
-                }
-
-            }
-
-            if(valid == false) {
-
-                socket.emit('resolve');
-            }
-
-
-
-
-
-
-        });
-
-    </script>
 
 
 

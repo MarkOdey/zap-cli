@@ -49,8 +49,6 @@ function Read(data) {
 
         var concatenatedText = Mediator.addData(new Concatenate([text1, text2]));
 
-
-
         this.addRelation(concatenatedText);
 
         //console.log(concatenatedText);
