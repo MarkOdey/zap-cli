@@ -6,7 +6,7 @@
   "dependencies": {
     "express": "^4.15.3",
     "moment": "^2.18.1",
-    "mongodb": "^2.2.10",
+    "mongodb": "^3.6.1",
     "primus": "^6.0.6",
     "q": "^1.4.1",
     "socket.io": "^1.5.0"
