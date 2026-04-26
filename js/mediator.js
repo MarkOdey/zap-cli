@@ -20,7 +20,7 @@ var Mediator = (function () {
 	
 	window.addEventListener("load", function() {
 
-	 	document.body.appendChild(this.root);
+	 	document.body.appendChild(self.root);
 
 	 });
 
@@ -200,6 +200,8 @@ var Mediator = (function () {
 
 
 	window.document.addEventListener('click', function () {
+
+		
 		Mediator.saveData();
 	});
 	this.saveData = function () {
@@ -246,7 +248,7 @@ var Mediator = (function () {
 			temp_action = this.addData(action);
 		}
 
-		//console.log(temp_action);
+	
 		this.actions.push(temp_action);	
 
 		return action;
@@ -280,14 +282,14 @@ var Menu = (function() {
 	this.menu.id = 'menu';
 
 	this.fullScreenBtn = document.createElement('div');
-	this.fullScreenBtn.className = 'icon-expand';
+	this.fullScreenBtn.className = 'fa-solid fa-expand';
 
 
 	 this.menu.appendChild(this.fullScreenBtn);
 
 	window.addEventListener("load", function() {
-		
-		document.body.appendChild(this.menu);
+
+		document.body.appendChild(self.menu);
 
 	});
 

@@ -1,55 +1,41 @@
-        
-        var socket = io('http://localhost:8080/');
+var socket = io("http://localhost:3000/");
 
+socket.on("connected", function (data) {
+  console.log("connected");
+  var terminal = new Terminal();
+});
 
-        socket.on('connected', function (data) {
-        	
-        	console.log("connected");
-        	var terminal = new Terminal();
-          
-        });
+var elements = {
+  Video: Video,
+  Image: Image,
+};
 
-        var elements = {
-            'Video' : Video,
-            'Image' : Image
-        }
-          
-        socket.on('play', function (data) {
+socket.on("play", function (data) {
+  console.log(data);
 
-            console.log(data);
+  console.log("play");
 
-            console.log('play');
+  var valid = false;
 
-            var valid = false;
+  for (var i in elements) {
+    if (elements[i].validate(data)) {
+      var element = new elements[i](data);
 
-            for(var i in elements) {
+      valid = true;
 
-                if(elements[i].validate(data)) {
+      element.run();
 
-                    var element =  new elements[i](data);
+      element.once("resolve", function () {
+        console.log("resolved");
 
-                    valid = true;
+        socket.emit("resolve");
+      });
 
-                    element.run();
+      break;
+    }
+  }
 
-                    element.once('resolve', function() {
-
-                        console.log('resolved');
-
-                        socket.emit('resolve');
-
-                    });
-
-                    break;
-                    
-                }
-
-            }
-
-            if(valid == false) {
-
-                socket.emit('resolve');
-            }
-
-
-        });
+  if (valid == false) {
+    socket.emit("resolve");
+  }
+});
