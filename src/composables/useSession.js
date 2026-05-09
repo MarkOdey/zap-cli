@@ -5,6 +5,7 @@ import { useMediaStore } from "../stores/media";
 let socket = null;
 const paused = ref(false);
 const exploring = ref(false);
+const uploadResult = ref(null); // { ok, segments?, error? }
 
 export function useSession() {
   const mediaStore = useMediaStore();
@@ -28,6 +29,10 @@ export function useSession() {
     socket.on("explored", () => {
       exploring.value = false;
     });
+
+    socket.on("upload:done", (result) => {
+      uploadResult.value = result;
+    });
   }
 
   function resolve() {
@@ -36,7 +41,7 @@ export function useSession() {
   }
 
   function reject() {
-    mediaStore.markDone();
+    mediaStore.clear();
     socket?.emit("reject");
   }
 
@@ -64,7 +69,17 @@ export function useSession() {
     socket?.emit("run", JSON.stringify({ action: cmd }));
   }
 
+  function like() {
+    socket?.emit("like");
+  }
+
+  function dislike() {
+    socket?.emit("dislike");
+  }
+
   function upload(meta, data) {
+    console.log("upload the file!!");
+    uploadResult.value = null;
     socket?.emit("upload", { meta, data });
   }
 
@@ -72,6 +87,8 @@ export function useSession() {
     connect,
     resolve,
     reject,
+    like,
+    dislike,
     pause,
     play,
     togglePlayPause,
@@ -80,5 +97,6 @@ export function useSession() {
     exploring,
     run,
     upload,
+    uploadResult,
   };
 }

@@ -1,11 +1,20 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useSession } from '../composables/useSession'
 
 const session = useSession()
 const open = ref(false)
 const textContent = ref('')
 const status = ref('')
+const uploading = ref(false)
+
+const uploadStatus = computed(() => {
+  if (uploading.value) return { text: 'Processing…', ok: null }
+  const r = session.uploadResult.value
+  if (!r) return null
+  if (r.ok) return { text: `Done — ${r.segments} segment${r.segments !== 1 ? 's' : ''} indexed`, ok: true }
+  return { text: `Upload failed: ${r.error}`, ok: false }
+})
 
 function triggerExplore() {
   session.explore()
@@ -29,12 +38,17 @@ function onFileChange(event) {
 
   const reader = new FileReader()
   reader.onload = (e) => {
-    session.upload({ name: file.name, type: file.type }, e.target.result)
-    status.value = `Uploaded: ${file.name}`
+    uploading.value = true
     event.target.value = ''
+    const result = e.target.result
+    setTimeout(() => session.upload({ name: file.name, type: file.type }, result), 0)
   }
   reader.readAsDataURL(file)
 }
+
+watch(session.uploadResult, (r) => {
+  if (r !== null) uploading.value = false
+})
 
 function submitText() {
   const content = textContent.value.trim()
@@ -73,6 +87,7 @@ function submitText() {
       </button>
 
       <p v-if="status" class="status">{{ status }}</p>
+      <p v-if="uploadStatus" class="status" :class="{ error: uploadStatus.ok === false }">{{ uploadStatus.text }}</p>
     </div>
   </div>
 </template>
@@ -171,5 +186,9 @@ textarea {
   font-family: monospace;
   font-size: 11px;
   margin: 0;
+}
+
+.status.error {
+  color: #f88;
 }
 </style>

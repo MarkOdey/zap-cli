@@ -1,3 +1,43 @@
+
+<template>
+  <div class="app">
+    <component
+      :is="currentComponent"
+      v-if="currentComponent"
+      :data="mediaStore.currentMedia"
+      @resolve="onResolve"
+      @reject="onReject"
+    />
+
+    <AppreciationControls
+      @like="onLike"
+      @dislike="onDislike"
+      @skip="onReject"
+    />
+
+    <UploadPanel />
+
+    <button
+      class="playpause-btn"
+      :title="paused ? 'Play' : 'Pause'"
+      @click="togglePlayPause"
+    >
+      <i :class="paused ? 'fas fa-play' : 'fas fa-pause'" />
+    </button>
+
+    <button
+      class="fullscreen-btn"
+      title="Fullscreen"
+      @click="toggleFullScreen"
+    >
+      <i class="fas fa-expand" />
+    </button>
+
+    <Terminal />
+  </div>
+</template>
+
+
 <script setup>
 import { computed, onMounted } from 'vue'
 import AppreciationControls from './components/AppreciationControls.vue'
@@ -33,48 +73,14 @@ function toggleFullScreen() {
 }
 
 function onResolve() { session.resolve() }
-function onReject() { session.reject() }
+function onReject()  { session.reject() }
+function onLike()    { session.like() }
+function onDislike() { session.dislike() }
 
 const { paused, togglePlayPause } = session
 </script>
 
-<template>
-  <div class="app">
-    <component
-      :is="currentComponent"
-      v-if="currentComponent"
-      :data="mediaStore.currentMedia"
-      @resolve="onResolve"
-      @reject="onReject"
-    />
 
-    <AppreciationControls
-      @like="onResolve"
-      @dislike="onReject"
-      @skip="onReject"
-    />
-
-    <UploadPanel />
-
-    <button
-      class="playpause-btn"
-      :title="paused ? 'Play' : 'Pause'"
-      @click="togglePlayPause"
-    >
-      <i :class="paused ? 'fas fa-play' : 'fas fa-pause'" />
-    </button>
-
-    <button
-      class="fullscreen-btn"
-      title="Fullscreen"
-      @click="toggleFullScreen"
-    >
-      <i class="fas fa-expand" />
-    </button>
-
-    <Terminal />
-  </div>
-</template>
 
 <style lang="scss">
 *, *::before, *::after {

@@ -4,13 +4,25 @@ const emit = defineEmits(['like', 'dislike', 'skip'])
 
 <template>
   <div class="appreciation-controls">
-    <button class="btn btn-like" title="Like" @click="emit('like')">
+    <button
+      class="btn btn-like"
+      title="Like"
+      @click="emit('like')"
+    >
       <i class="fas fa-thumbs-up" />
     </button>
-    <button class="btn btn-skip" title="Skip" @click="emit('skip')">
+    <button
+      class="btn btn-skip"
+      title="Skip"
+      @click="emit('skip')"
+    >
       <i class="fas fa-forward" />
     </button>
-    <button class="btn btn-dislike" title="Dislike" @click="emit('dislike')">
+    <button
+      class="btn btn-dislike"
+      title="Dislike"
+      @click="emit('dislike')"
+    >
       <i class="fas fa-thumbs-down" />
     </button>
   </div>
@@ -18,13 +30,14 @@ const emit = defineEmits(['like', 'dislike', 'skip'])
 
 <style scoped>
 .appreciation-controls {
+
   position: fixed;
   bottom: 48px;
   right: 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  opacity: 0;
+
   transition: opacity 0.2s;
   z-index: 10;
 }

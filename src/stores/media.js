@@ -26,5 +26,10 @@ export const useMediaStore = defineStore("media", () => {
     playbackState.value = "done";
   }
 
-  return { currentMedia, playbackState, mediaType, setMedia, markDone };
+  function clear() {
+    currentMedia.value = null;
+    playbackState.value = "idle";
+  }
+
+  return { currentMedia, playbackState, mediaType, setMedia, markDone, clear };
 });
