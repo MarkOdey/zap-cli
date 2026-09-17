@@ -81,8 +81,9 @@ const session = useSession()
 onMounted(() => session.connect())
 
 const currentComponent = computed(() => {
-
-  console.log(mediaStore.mediaType)
+  // null here is normal: it means nothing is playing, which is the gap between
+  // items after reject() clears the store. A document whose type maps to no
+  // player is warned about in stores/media.js instead.
   const type = mediaStore.mediaType
   if (type === 'video') return VideoPlayer
   if (type === 'image') return ImagePlayer
