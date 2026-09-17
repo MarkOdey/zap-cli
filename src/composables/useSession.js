@@ -23,6 +23,12 @@ const jobs = ref([]);
 const tasks = ref([]);
 const pending = ref(0);
 const commands = ref([]);
+const runLog = ref([]);
+
+const LOG_LIMIT = 100;
+function log(entry) {
+  runLog.value = [...runLog.value, { ...entry, at: Date.now() }].slice(-LOG_LIMIT);
+}
 
 export function useSession() {
   const mediaStore = useMediaStore();
@@ -47,6 +53,18 @@ export function useSession() {
 
     socket.on("commands", (list) => {
       commands.value = list;
+    });
+
+    socket.on("run:done", ({ action, result }) => {
+      log({ kind: "done", action, result });
+    });
+
+    socket.on("run:error", ({ action, error }) => {
+      log({ kind: "error", action, error });
+    });
+
+    socket.on("run:queued", ({ action, id }) => {
+      log({ kind: "queued", action, id });
     });
 
     socket.on("queue:state", (state) => {
@@ -137,8 +155,14 @@ export function useSession() {
     socket.emit("reject");
   }
 
-  function run(cmd) {
-    socket?.emit("run", JSON.stringify({ action: cmd }));
+  /** Send a parsed command. Params are optional for actions that take none. */
+  function run(action, params = {}) {
+    log({ kind: "sent", action, params });
+    socket?.emit("run", JSON.stringify({ action, params }));
+  }
+
+  function logLocal(entry) {
+    log(entry);
   }
 
   function like() {
@@ -178,6 +202,8 @@ export function useSession() {
     tasks,
     pending,
     commands,
+    runLog,
+    logLocal,
   };
 }
 
