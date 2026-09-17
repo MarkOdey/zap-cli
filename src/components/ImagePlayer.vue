@@ -47,7 +47,17 @@ function reject() {
 function onLoad() {
   loaded.value = true
   clearTimeout(safety)
+
+  // A3: when a soundtrack is linked, the track's length decides how long the
+  // still is shown — the audio's `ended` resolves instead of the timer.
+  if (props.data.audio?.src) return
   timer = setTimeout(resolve, props.data.duration ?? DISPLAY_MS)
+}
+
+/** The soundtrack failed; fall back to the normal display timer. */
+function onAudioError() {
+  console.warn('soundtrack failed to load:', props.data.audio?.key)
+  if (!resolved && !timer) timer = setTimeout(resolve, props.data.duration ?? DISPLAY_MS)
 }
 
 function onError() {
@@ -88,6 +98,14 @@ onUnmounted(() => {
     >
       <i class="fas fa-circle-notch fa-spin" />
     </div>
+
+    <audio
+      v-if="data.audio?.src"
+      :src="data.audio.src"
+      autoplay
+      @ended="resolve"
+      @error="onAudioError"
+    />
   </div>
 </template>
 

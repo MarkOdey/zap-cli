@@ -11,9 +11,12 @@ export const useMediaStore = defineStore("media", () => {
     const fileType = currentMedia.value.type ?? "";
     if (fileType.includes("video")) return "video";
     if (fileType.includes("image")) return "image";
+    if (fileType.includes("audio")) return "audio";
     if (fileType.includes("text")) return "text";
 
-    console.log(currentMedia.value);
+    // No player means nothing emits resolve/reject, which parks the loop — so an
+    // unmapped type is worth shouting about.
+    console.warn("no player for type", fileType, currentMedia.value.key);
     return null;
   });
 

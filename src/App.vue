@@ -64,6 +64,7 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import AppreciationControls from './components/AppreciationControls.vue'
+import AudioPlayer from './components/AudioPlayer.vue'
 import ImagePlayer from './components/ImagePlayer.vue'
 import TerminalPanel from './components/TerminalPanel.vue'
 import TextPlayer from './components/TextPlayer.vue'
@@ -85,6 +86,7 @@ const currentComponent = computed(() => {
   const type = mediaStore.mediaType
   if (type === 'video') return VideoPlayer
   if (type === 'image') return ImagePlayer
+  if (type === 'audio') return AudioPlayer
   if (type === 'text') return TextPlayer
   return null
 })
