@@ -128,6 +128,10 @@ function label(job) {
 
 <style scoped>
 .queue-panel {
+  /* Sized to the button only: this is anchored by `right`, so letting the
+     open panel set the width dragged the button leftward. */
+  width: 36px;
+  height: 36px;
   position: fixed;
   top: 16px;
   right: 64px;
@@ -169,7 +173,10 @@ function label(job) {
 }
 
 .panel {
-  margin-top: 8px;
+  position: absolute;
+  top: 44px;
+  right: 0;
+
   width: 280px;
   max-height: 60vh;
   overflow-y: auto;

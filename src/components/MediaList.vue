@@ -197,6 +197,10 @@ const icon = (type) => ({
 
 <style scoped>
 .media-list {
+  /* Sized to the button only: this is anchored by `right`, so letting the
+     open panel set the width dragged the button leftward. */
+  width: 36px;
+  height: 36px;
   position: fixed;
   top: 16px;
   right: 112px;
@@ -220,7 +224,10 @@ const icon = (type) => ({
 .toggle-btn:hover { background: rgba(255, 255, 255, 0.3); }
 
 .panel {
-  margin-top: 8px;
+  position: absolute;
+  top: 44px;
+  right: 0;
+
   width: 340px;
   background: rgba(0, 0, 0, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.15);
