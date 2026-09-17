@@ -54,7 +54,17 @@ async function load() {
 
   loaded.value = true
   clearTimeout(timer)
+
+  // A narration (from the `speak` action, linked by a soundtrack edge) decides how
+  // long the text stays up — its `ended` resolves instead of the timer.
+  if (props.data.audio?.src) return
   timer = setTimeout(resolve, props.data.duration ?? DISPLAY_MS)
+}
+
+/** Narration failed; fall back to the normal display timer. */
+function onAudioError() {
+  console.warn('narration failed to load:', props.data.audio?.key)
+  if (!resolved && !timer) timer = setTimeout(resolve, props.data.duration ?? DISPLAY_MS)
 }
 
 /**
@@ -96,6 +106,14 @@ onUnmounted(() => clearTimeout(timer))
     <i
       v-else
       class="fas fa-circle-notch fa-spin waiting"
+    />
+
+    <audio
+      v-if="data.audio?.src"
+      :src="data.audio.src"
+      autoplay
+      @ended="resolve"
+      @error="onAudioError"
     />
   </div>
 </template>
