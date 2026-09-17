@@ -17,14 +17,9 @@ const uploadStatus = computed(() => {
 })
 
 function triggerExplore() {
+  // The queue panel reports progress now — no polling needed.
   session.explore()
-  status.value = 'Exploring…'
-  const stop = setInterval(() => {
-    if (!session.exploring.value) {
-      status.value = 'Library indexed.'
-      clearInterval(stop)
-    }
-  }, 500)
+  status.value = 'Queued.'
 }
 
 function toggle() {
