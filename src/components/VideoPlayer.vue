@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const props = defineProps({
-  data: { type: Object, required: true }
+defineProps({
+  data: { type: Object, required: true },
 })
 
 const emit = defineEmits(['resolve', 'reject'])

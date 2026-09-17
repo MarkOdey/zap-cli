@@ -56,7 +56,7 @@
       <i class="fas fa-expand" />
     </button>
 
-    <Terminal />
+    <TerminalPanel />
   </div>
 </template>
 
@@ -65,7 +65,7 @@
 import { computed, onMounted } from 'vue'
 import AppreciationControls from './components/AppreciationControls.vue'
 import ImagePlayer from './components/ImagePlayer.vue'
-import Terminal from './components/Terminal.vue'
+import TerminalPanel from './components/TerminalPanel.vue'
 import TextPlayer from './components/TextPlayer.vue'
 import MediaList from './components/MediaList.vue'
 import QueuePanel from './components/QueuePanel.vue'
