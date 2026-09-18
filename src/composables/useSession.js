@@ -23,6 +23,28 @@ const jobs = ref([]);
 const tasks = ref([]);
 const pending = ref(0);
 const commands = ref([]);
+
+/**
+ * Whether sound is on. Browsers refuse to autoplay audible media until the page
+ * has been interacted with, so players start muted when that refusal happens and
+ * this lets the user turn it back on with the gesture that unblocks it.
+ */
+const soundOn = ref(readSoundPreference());
+
+function readSoundPreference() {
+  try {
+    return window.localStorage.getItem("zap:sound") !== "off";
+  } catch {
+    return true;
+  }
+}
+
+function setSound(on) {
+  soundOn.value = on;
+  try {
+    window.localStorage.setItem("zap:sound", on ? "on" : "off");
+  } catch { /* private mode; the ref still works for this session */ }
+}
 const runLog = ref([]);
 
 const LOG_LIMIT = 100;
@@ -204,6 +226,8 @@ export function useSession() {
     commands,
     runLog,
     logLocal,
+    soundOn,
+    setSound,
   };
 }
 

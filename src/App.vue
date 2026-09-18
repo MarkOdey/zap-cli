@@ -22,6 +22,15 @@
     <QueuePanel />
 
     <button
+      class="sound-btn"
+      :class="{ off: !soundOn }"
+      :title="soundOn ? 'Sound on' : 'Sound off — click to enable'"
+      @click="setSound(!soundOn)"
+    >
+      <i :class="soundOn ? 'fas fa-volume-up' : 'fas fa-volume-mute'" />
+    </button>
+
+    <button
       class="cutout-btn"
       :class="{ working: cutoutBusy }"
       :title="cutoutTitle"
@@ -131,7 +140,7 @@ function onReject()  { session.reject() }
 function onLike()    { session.like() }
 function onDislike() { session.dislike() }
 
-const { paused, togglePlayPause, exploring, explore } = session
+const { paused, togglePlayPause, exploring, explore, soundOn, setSound } = session
 </script>
 
 
@@ -155,6 +164,32 @@ html, body, #app {
   position: relative;
   width: 100%;
   height: 100%;
+}
+
+.sound-btn {
+  position: fixed;
+  bottom: 212px;
+  left: 16px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  &.off {
+    color: #888;
+  }
 }
 
 .cutout-btn {

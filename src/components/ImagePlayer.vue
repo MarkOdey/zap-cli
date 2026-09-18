@@ -50,8 +50,28 @@ function onLoad() {
 
   // A3: when a soundtrack is linked, the track's length decides how long the
   // still is shown — the audio's `ended` resolves instead of the timer.
-  if (props.data.audio?.src) return
+  if (props.data.audio?.src) {
+    startSoundtrack()
+    return
+  }
   timer = setTimeout(resolve, props.data.duration ?? DISPLAY_MS)
+}
+
+const audioEl = ref(null)
+
+/**
+ * Browsers refuse to autoplay audible media until the page has been interacted
+ * with. A refused play() leaves the track paused, so `ended` never fires — and
+ * because the display timer is skipped when a soundtrack exists, the loop would
+ * park here forever. Fall back to the timer when that happens.
+ */
+async function startSoundtrack() {
+  try {
+    await audioEl.value?.play()
+  } catch (err) {
+    console.warn('soundtrack could not start, using the display timer:', err?.message)
+    if (!resolved && !timer) timer = setTimeout(resolve, props.data.duration ?? DISPLAY_MS)
+  }
 }
 
 /** The soundtrack failed; fall back to the normal display timer. */
@@ -101,6 +121,7 @@ onUnmounted(() => {
 
     <audio
       v-if="data.audio?.src"
+      ref="audioEl"
       :src="data.audio.src"
       autoplay
       @ended="resolve"
