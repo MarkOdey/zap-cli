@@ -1,4 +1,28 @@
+# Dependencies
 node_modules/
-dist/
 server/node_modules/
+
+# Build output
+dist/
+.vite/
+
+# Media, if anything is ever written here alongside the API
 data/
+
+# Environment and secrets
+.env
+.env.*
+*.local.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# package-lock.json is deliberately NOT ignored — it pins the build.
