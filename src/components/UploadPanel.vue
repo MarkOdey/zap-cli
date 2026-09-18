@@ -56,21 +56,41 @@ function submitText() {
 
 <template>
   <div class="upload-panel">
-    <button class="toggle-btn" title="Upload" @click="toggle">
+    <button
+      class="toggle-btn"
+      title="Upload"
+      @click="toggle"
+    >
       <i class="fas fa-upload" />
     </button>
 
-    <div v-if="open" class="upload-form">
+    <div
+      v-if="open"
+      class="upload-form"
+    >
       <label class="form-label">
-        Video / Image
-        <input type="file" accept="video/*,image/*" @change="onFileChange" />
+        Video / Image / Audio / Text
+        <input
+          type="file"
+          accept="video/*,image/*,audio/*,text/plain,.txt,.md"
+          @change="onFileChange"
+        >
       </label>
 
       <label class="form-label">
-        Text
-        <textarea v-model="textContent" rows="3" placeholder="Enter text..." />
+        Write text
+        <textarea
+          v-model="textContent"
+          rows="3"
+          placeholder="Enter text..."
+        />
       </label>
-      <button class="submit-btn" @click="submitText">Submit text</button>
+      <button
+        class="submit-btn"
+        @click="submitText"
+      >
+        Submit text
+      </button>
 
       <button
         class="submit-btn explore-btn"
@@ -81,8 +101,19 @@ function submitText() {
         {{ session.exploring.value ? 'Indexing…' : 'Explore library' }}
       </button>
 
-      <p v-if="status" class="status">{{ status }}</p>
-      <p v-if="uploadStatus" class="status" :class="{ error: uploadStatus.ok === false }">{{ uploadStatus.text }}</p>
+      <p
+        v-if="status"
+        class="status"
+      >
+        {{ status }}
+      </p>
+      <p
+        v-if="uploadStatus"
+        class="status"
+        :class="{ error: uploadStatus.ok === false }"
+      >
+        {{ uploadStatus.text }}
+      </p>
     </div>
   </div>
 </template>
