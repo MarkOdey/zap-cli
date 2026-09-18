@@ -140,6 +140,16 @@ const icon = (type) => ({
         >
           wt
         </button>
+        <button
+          class="sort d"
+          :class="{ active: sort === 'date' }"
+          @click="setSort('date')"
+        >
+          age <i
+            v-if="sort === 'date'"
+            :class="order === 1 ? 'fas fa-caret-up' : 'fas fa-caret-down'"
+          />
+        </button>
       </div>
 
       <p
@@ -173,6 +183,10 @@ const icon = (type) => ({
           <span class="name">{{ item.name }}</span>
           <span class="type">{{ kind(item.type) }}</span>
           <span class="wt">{{ item.weight?.toFixed(2) }}</span>
+          <span
+            class="date"
+            :title="item.addedAt"
+          >{{ age(item.addedAt) }}</span>
         </li>
       </ul>
 
