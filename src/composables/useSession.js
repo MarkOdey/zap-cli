@@ -3,7 +3,31 @@ import { ref } from "vue";
 import { useMediaStore } from "../stores/media";
 
 let socket = null;
-let apiOrigin = "http://localhost:3000/";
+/**
+ * Where the API is, derived from wherever this page was served from.
+ *
+ * Hardcoding localhost only ever worked on the machine running the server: on a
+ * phone, "localhost" is the phone, so both the socket and every media URL pointed
+ * at nothing. Taking the hostname from the page means opening
+ * http://192.168.1.10:5173 on any device finds the API at the same host.
+ *
+ * VITE_API_URL overrides it when the API lives somewhere else entirely.
+ */
+const API_PORT = import.meta.env?.VITE_API_PORT ?? "3000";
+
+function defaultApiOrigin() {
+  const override = import.meta.env?.VITE_API_URL;
+  if (override) return override;
+
+  if (typeof window !== "undefined" && window.location?.hostname) {
+    const { protocol, hostname } = window.location;
+    return `${protocol}//${hostname}:${API_PORT}/`;
+  }
+
+  return `http://localhost:${API_PORT}/`;
+}
+
+let apiOrigin = defaultApiOrigin();
 
 /** Turn the server's relative media path into a URL the browser can fetch. */
 function resolveMedia(src) {
@@ -94,7 +118,7 @@ function log(entry) {
 export function useSession() {
   const mediaStore = useMediaStore();
 
-  function connect(url = "http://localhost:3000/") {
+  function connect(url = defaultApiOrigin()) {
     apiOrigin = url;
     socket = io(url);
 
