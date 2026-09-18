@@ -4,6 +4,19 @@ import { useSession } from '../composables/useSession'
 
 const session = useSession()
 const open = ref(false)
+
+/**
+ * Android maps `accept` onto EXTRA_MIME_TYPES and tends to open the handler for
+ * the first type listed, so image/* leads — otherwise the picker can open on video
+ * and the Camera folder appears empty. Bare extensions are left out entirely: they
+ * have no MIME mapping there, and an entry Android cannot resolve makes some
+ * pickers grey out everything.
+ */
+const MEDIA_TYPES = 'image/*,video/*,audio/*,text/plain'
+
+/** Pickers vary enough between devices that an escape hatch is worth having. */
+const unfiltered = ref(false)
+const acceptTypes = computed(() => (unfiltered.value ? undefined : MEDIA_TYPES))
 const textContent = ref('')
 const status = ref('')
 
@@ -95,9 +108,17 @@ async function submitText() {
         <input
           type="file"
           multiple
-          accept="video/*,image/*,audio/*,text/plain,.txt,.md"
+          :accept="acceptTypes"
           @change="onFileChange"
         >
+        <button
+          class="link-btn"
+          type="button"
+          :title="unfiltered ? 'Only offer media files' : 'Some phones hide files when a filter is set'"
+          @click="unfiltered = !unfiltered"
+        >
+          {{ unfiltered ? 'filtering by type' : "can't see your photos? show all files" }}
+        </button>
       </label>
 
       <label class="form-label">
@@ -246,5 +267,21 @@ textarea {
 
 .status.error {
   color: #f88;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #6a9;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 10px;
+  padding: 2px 0 0;
+  text-align: left;
+  text-decoration: underline;
+}
+
+.link-btn:hover {
+  color: #8cb;
 }
 </style>
