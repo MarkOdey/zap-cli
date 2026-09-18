@@ -138,7 +138,12 @@ function cutout() {
 function onResolve() { session.resolve() }
 function onReject()  { session.reject() }
 function onLike()    { session.like() }
-function onDislike() { session.dislike() }
+function onDislike() {
+  // Lower the weight, then move on. A thumbs-down that left the item playing read
+  // as though nothing had happened — the weight change is invisible on screen.
+  session.dislike()
+  session.reject()
+}
 
 const { paused, togglePlayPause, exploring, explore, soundOn, setSound } = session
 </script>

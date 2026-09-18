@@ -1,27 +1,50 @@
 <script setup>
+import { onUnmounted, ref } from 'vue'
+
 const emit = defineEmits(['like', 'dislike', 'skip'])
+
+/**
+ * Which button was last pressed, cleared shortly after.
+ *
+ * Liking and disliking change a weight in the database and nothing on screen, so
+ * without this the controls give no sign of having worked at all.
+ */
+const flashed = ref(null)
+let timer = null
+
+function press(action) {
+  emit(action)
+  flashed.value = action
+  clearTimeout(timer)
+  timer = setTimeout(() => { flashed.value = null }, 450)
+}
+
+onUnmounted(() => clearTimeout(timer))
 </script>
 
 <template>
   <div class="appreciation-controls">
     <button
       class="btn btn-like"
+      :class="{ flash: flashed === 'like' }"
       title="Like"
-      @click="emit('like')"
+      @click="press('like')"
     >
       <i class="fas fa-thumbs-up" />
     </button>
     <button
       class="btn btn-skip"
+      :class="{ flash: flashed === 'skip' }"
       title="Skip"
-      @click="emit('skip')"
+      @click="press('skip')"
     >
       <i class="fas fa-forward" />
     </button>
     <button
       class="btn btn-dislike"
-      title="Dislike"
-      @click="emit('dislike')"
+      :class="{ flash: flashed === 'dislike' }"
+      title="Dislike — lowers its weight and moves on"
+      @click="press('dislike')"
     >
       <i class="fas fa-thumbs-down" />
     </button>
@@ -68,4 +91,14 @@ const emit = defineEmits(['like', 'dislike', 'skip'])
 
 .btn-like:hover { background: rgba(80, 200, 80, 0.5); }
 .btn-dislike:hover { background: rgba(200, 80, 80, 0.5); }
+
+/* Confirmation that the press registered — the effect is otherwise invisible. */
+.btn.flash {
+  transform: scale(1.18);
+  transition: transform 0.12s ease-out, background 0.12s;
+}
+
+.btn-like.flash { background: rgba(80, 200, 80, 0.85); }
+.btn-dislike.flash { background: rgba(200, 80, 80, 0.85); }
+.btn-skip.flash { background: rgba(255, 255, 255, 0.55); }
 </style>
