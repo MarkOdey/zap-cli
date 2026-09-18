@@ -176,6 +176,22 @@ export function useSession() {
    * inside play(), so the reject is what ends the current item and lets the
    * forced key take effect on the next cycle.
    */
+  /** Delete a library item. Resolves with the server's reply. */
+  function removeMedia(key, { cascade = false } = {}) {
+    return new Promise((resolve) => {
+      if (!socket || !key) return resolve({ error: "not connected" });
+      socket.emit("run", JSON.stringify({ action: "remove", params: { key, cascade } }));
+      const onDone = (r) => { if (r.action === "remove") { cleanup(); resolve(r.result ?? {}); } };
+      const onError = (r) => { if (r.action === "remove") { cleanup(); resolve({ error: r.error }); } };
+      function cleanup() {
+        socket.off("run:done", onDone);
+        socket.off("run:error", onError);
+      }
+      socket.on("run:done", onDone);
+      socket.on("run:error", onError);
+    });
+  }
+
   function playKey(key) {
     if (!socket || !key) return;
     socket.emit("playKey", { key });
@@ -259,6 +275,7 @@ export function useSession() {
     cancelJob,
     fetchList,
     playKey,
+    removeMedia,
     jobs,
     tasks,
     pending,

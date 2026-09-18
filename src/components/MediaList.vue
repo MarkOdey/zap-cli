@@ -66,6 +66,45 @@ watch([search, typeFilter], () => {
 // Keep the list honest while the loop advances on its own.
 watch(playingKey, () => { if (open.value) load() })
 
+/** Compact relative age, so the column stays narrow. */
+function age(iso) {
+  if (!iso) return ''
+  const seconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000)
+  if (seconds < 60) return 'now'
+  const minutes = seconds / 60
+  if (minutes < 60) return `${Math.floor(minutes)}m`
+  const hours = minutes / 60
+  if (hours < 24) return `${Math.floor(hours)}h`
+  const days = hours / 24
+  if (days < 7) return `${Math.floor(days)}d`
+  return `${Math.floor(days / 7)}w`
+}
+
+/** Key awaiting confirmation, so a stray click cannot delete anything. */
+const confirming = ref(null)
+const removing = ref(null)
+
+function askRemove(item) {
+  confirming.value = confirming.value === item.key ? null : item.key
+}
+
+async function doRemove(item) {
+  removing.value = item.key
+  const wasPlaying = item.key === playingKey.value
+  const result = await session.removeMedia(item.key)
+  removing.value = null
+  confirming.value = null
+
+  if (result.error) {
+    console.warn('could not remove', item.key, result.error)
+    return
+  }
+
+  // Deleting what is on screen would otherwise leave it playing a missing file.
+  if (wasPlaying) session.reject()
+  load()
+}
+
 const kind = (type) => (type || '').split('/')[0] || '?'
 const icon = (type) => ({
   video: 'fa-film', image: 'fa-image', audio: 'fa-music', text: 'fa-align-left',
@@ -187,6 +226,24 @@ const icon = (type) => ({
             class="date"
             :title="item.addedAt"
           >{{ age(item.addedAt) }}</span>
+
+          <button
+            v-if="confirming !== item.key"
+            class="remove"
+            title="Delete this item"
+            @click.stop="askRemove(item)"
+          >
+            <i class="fas fa-times" />
+          </button>
+          <button
+            v-else
+            class="remove confirm"
+            :disabled="removing === item.key"
+            title="Click again to delete permanently"
+            @click.stop="doRemove(item)"
+          >
+            <i :class="removing === item.key ? 'fas fa-spinner fa-spin' : 'fas fa-trash'" />
+          </button>
         </li>
       </ul>
 
@@ -309,6 +366,26 @@ const icon = (type) => ({
 .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .type { color: #777; font-size: 10px; }
 .wt { color: #777; font-size: 10px; width: 34px; text-align: right; }
+.date { color: #777; font-size: 10px; width: 30px; text-align: right; }
+.sort.d { width: 30px; text-align: right; }
+
+.remove {
+  background: none;
+  border: none;
+  color: #555;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0 2px;
+  width: 18px;
+  flex-shrink: 0;
+}
+
+.remove:hover { color: #f55; }
+
+/* Armed: the next click deletes, so make that unmistakable. */
+.remove.confirm { color: #f55; }
+.remove.confirm:hover { color: #f88; }
+.remove:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .note { color: #666; font-size: 11px; margin: 8px 0; text-align: center; }
 
