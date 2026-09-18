@@ -157,6 +157,42 @@ const { paused, togglePlayPause, exploring, explore, soundOn, setSound } = sessi
   padding: 0;
 }
 
+/**
+ * The players are a surface you click to advance, not a document to read from, so
+ * a stray drag highlighting the text of a headline or leaving a selection over a
+ * photo is only ever noise. Applies to every player: each uses `.player`.
+ *
+ * Deliberately not global — the terminal's output and its input stay selectable,
+ * because copying a result out of them is the point of having them.
+ */
+.player,
+.player * {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Dragging a frame out of the player produces a ghost image and a stray drop. */
+.player img,
+.player video {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+/* Chrome around the media: buttons and rows are for pressing, not selecting. */
+.appreciation-controls,
+.media-list .rows,
+.media-list .head,
+.queue-panel .toggle-btn,
+.upload-panel .toggle-btn,
+.playpause-btn,
+.fullscreen-btn,
+.explore-btn,
+.cutout-btn,
+.sound-btn {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 html, body, #app {
   width: 100%;
   height: 100%;
