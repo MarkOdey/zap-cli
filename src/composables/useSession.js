@@ -16,7 +16,10 @@ function resolveMedia(src) {
 }
 const paused = ref(false);
 const exploring = ref(false);
-const uploadResult = ref(null); // { ok, segments?, error? }
+const uploadResult = ref(null); // { ok, name?, segments?, error? }
+
+/** Batch progress while several files are being sent, or null when idle. */
+const uploadProgress = ref(null); // { done, total, current, failures: [] }
 
 // Queue + scheduler state, shared by every component that calls useSession().
 const jobs = ref([]);
@@ -66,6 +69,8 @@ export function useSession() {
     socket.on("play", (data) => {
       // The server sends a relative /media/:key path now, not base64. Resolve it
       // against the API origin so players can use it as an ordinary src.
+
+      console.log('Play', data);
       mediaStore.setMedia({ ...data, src: resolveMedia(data.src) });
     });
 
@@ -195,10 +200,42 @@ export function useSession() {
     socket?.emit("dislike");
   }
 
+  /** Send one file. Resolves with {ok, name, segments?, error?}. */
   function upload(meta, data) {
-    console.log("upload the file!!");
     uploadResult.value = null;
-    socket?.emit("upload", { meta, data });
+    return new Promise((resolve) => {
+      if (!socket) return resolve({ ok: false, name: meta?.name, error: "not connected" });
+      socket.emit("upload", { meta, data }, resolve);
+    });
+  }
+
+  /**
+   * Send several files one after another.
+   *
+   * Sequential on purpose: each file crosses the socket as base64, so a handful of
+   * videos sent at once would hold hundreds of megabytes in memory at both ends.
+   */
+  async function uploadAll(files, read) {
+    const list = [...files];
+    uploadProgress.value = { done: 0, total: list.length, current: null, failures: [] };
+
+    for (const file of list) {
+      uploadProgress.value = { ...uploadProgress.value, current: file.name };
+      try {
+        const payload = await read(file);
+        const result = await upload({ name: file.name, type: file.type }, payload);
+        if (!result.ok) {
+          uploadProgress.value.failures.push({ name: file.name, error: result.error });
+        }
+      } catch (err) {
+        uploadProgress.value.failures.push({ name: file.name, error: err?.message ?? "could not read file" });
+      }
+      uploadProgress.value = { ...uploadProgress.value, done: uploadProgress.value.done + 1 };
+    }
+
+    const summary = { ...uploadProgress.value, current: null };
+    uploadProgress.value = summary;
+    return summary;
   }
 
   return {
@@ -215,7 +252,9 @@ export function useSession() {
     exploring,
     run,
     upload,
+    uploadAll,
     uploadResult,
+    uploadProgress,
     enqueue,
     cancelJob,
     fetchList,

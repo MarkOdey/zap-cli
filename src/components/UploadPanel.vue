@@ -1,15 +1,55 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useSession } from '../composables/useSession'
 
 const session = useSession()
 const open = ref(false)
 const textContent = ref('')
 const status = ref('')
-const uploading = ref(false)
+
+/** Read a File as a data URL, which is what the upload action expects. */
+function readAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => resolve(e.target.result)
+    reader.onerror = () => reject(new Error(`could not read ${file.name}`))
+    reader.readAsDataURL(file)
+  })
+}
+
+async function onFileChange(event) {
+  const files = [...event.target.files]
+  if (files.length === 0) return
+
+  // Clear the input now so the same selection can be chosen again afterwards.
+  event.target.value = ''
+  status.value = ''
+
+  const summary = await session.uploadAll(files, readAsDataUrl)
+
+  const failed = summary.failures.length
+  const sent = summary.total - failed
+  status.value = failed
+    ? `${sent} of ${summary.total} uploaded — ${summary.failures.map(f => f.name).join(', ')} failed`
+    : `${sent} file${sent === 1 ? '' : 's'} uploaded`
+}
+
+const progress = computed(() => {
+  const p = session.uploadProgress.value
+  if (!p || p.done >= p.total) return null
+  return p.total === 1
+    ? `Uploading ${p.current ?? ''}…`
+    : `Uploading ${p.done + 1} of ${p.total}${p.current ? ` — ${p.current}` : ''}`
+})
 
 const uploadStatus = computed(() => {
-  if (uploading.value) return { text: 'Processing…', ok: null }
+  if (progress.value) return { text: progress.value, ok: null }
+  const p = session.uploadProgress.value
+  if (p && p.total > 0 && p.done >= p.total) {
+    return p.failures.length
+      ? { text: `${p.failures.length} of ${p.total} failed`, ok: false }
+      : null
+  }
   const r = session.uploadResult.value
   if (!r) return null
   if (r.ok) return { text: `Done — ${r.segments} segment${r.segments !== 1 ? 's' : ''} indexed`, ok: true }
@@ -27,30 +67,12 @@ function toggle() {
   status.value = ''
 }
 
-function onFileChange(event) {
-  const file = event.target.files[0]
-  if (!file) return
-
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    uploading.value = true
-    event.target.value = ''
-    const result = e.target.result
-    setTimeout(() => session.upload({ name: file.name, type: file.type }, result), 0)
-  }
-  reader.readAsDataURL(file)
-}
-
-watch(session.uploadResult, (r) => {
-  if (r !== null) uploading.value = false
-})
-
-function submitText() {
+async function submitText() {
   const content = textContent.value.trim()
   if (!content) return
-  session.upload({ name: 'text-' + Date.now() + '.txt', type: 'text/plain' }, content)
-  status.value = 'Text uploaded.'
   textContent.value = ''
+  const result = await session.upload({ name: `text-${Date.now()}.txt`, type: 'text/plain' }, content)
+  status.value = result.ok ? 'Text uploaded.' : `Text upload failed: ${result.error}`
 }
 </script>
 
@@ -69,9 +91,10 @@ function submitText() {
       class="upload-form"
     >
       <label class="form-label">
-        Video / Image / Audio / Text
+        Files — pick several at once
         <input
           type="file"
+          multiple
           accept="video/*,image/*,audio/*,text/plain,.txt,.md"
           @change="onFileChange"
         >
