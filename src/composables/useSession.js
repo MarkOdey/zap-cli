@@ -34,6 +34,42 @@ const commands = ref([]);
  */
 const soundOn = ref(readSoundPreference());
 
+/**
+ * Last resort against a player that never resolves.
+ *
+ * Every player has its own guards, but they only cover the failures anticipated:
+ * a keyed component that never remounts, an event that never fires, a browser that
+ * refuses something silently. If nothing has advanced well past what an item
+ * should take, skip it rather than sit there — a wrong skip is recoverable, a
+ * stall is not.
+ */
+const STALL_LIMIT_MS = {
+  image: 60_000,
+  text: 60_000,
+  audio: 20 * 60_000,
+  video: 20 * 60_000,
+};
+
+let watchdog = null;
+
+function armWatchdog(media) {
+  clearTimeout(watchdog);
+
+  const kind = String(media?.type ?? "").split("/")[0];
+  const limit = STALL_LIMIT_MS[kind];
+  if (!limit) return;
+
+  watchdog = setTimeout(() => {
+    console.warn(`playback stalled on ${media?.key} after ${limit / 1000}s — skipping`);
+    socket?.emit("reject");
+  }, limit);
+}
+
+function disarmWatchdog() {
+  clearTimeout(watchdog);
+  watchdog = null;
+}
+
 function readSoundPreference() {
   try {
     return window.localStorage.getItem("zap:sound") !== "off";
@@ -67,6 +103,7 @@ export function useSession() {
     });
 
     socket.on("play", (data) => {
+      armWatchdog(data);
       // The server sends a relative /media/:key path now, not base64. Resolve it
       // against the API origin so players can use it as an ordinary src.
 
@@ -122,17 +159,21 @@ export function useSession() {
   }
 
   function resolve() {
+    disarmWatchdog();
     mediaStore.markDone();
     socket?.emit("resolve");
   }
 
   function reject() {
+    disarmWatchdog();
     mediaStore.clear();
     socket?.emit("reject");
   }
 
   function pause() {
     paused.value = true;
+    // A paused player is not a stalled one.
+    disarmWatchdog();
     socket?.emit("pause");
   }
 

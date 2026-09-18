@@ -1,9 +1,16 @@
 
 <template>
   <div class="app">
+    <!--
+      The key is load-bearing. Without it, two items of the same kind in a row
+      reuse the same component instance, so onMounted never runs again and the
+      player keeps `resolved` from the previous item — resolve() returns early and
+      playback parks. Keying on the document forces a fresh instance per item.
+    -->
     <component
       :is="currentComponent"
       v-if="currentComponent"
+      :key="mediaStore.currentMedia?.key"
       :data="mediaStore.currentMedia"
       @resolve="onResolve"
       @reject="onReject"
