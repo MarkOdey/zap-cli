@@ -90,6 +90,10 @@ function summarize(entry) {
   if (entry.kind === 'queued') return `${entry.action} queued`
   if (entry.kind === 'error') return `${entry.action}: ${entry.error}`
   if (entry.result === null || entry.result === undefined) return `${entry.action} ok`
+
+  // Actions that produce readable output — help, notably — return `lines`.
+  if (Array.isArray(entry.result?.lines)) return entry.result.lines.join('\n')
+
   if (typeof entry.result === 'object') return `${entry.action} → ${JSON.stringify(entry.result, null, 0)}`
   return `${entry.action} → ${entry.result}`
 }
@@ -184,6 +188,7 @@ const prefix = { sent: '$', done: '→', error: '!', queued: '⋯' }
   color: #bbb;
   white-space: pre-wrap;
   word-break: break-word;
+  font-variant-ligatures: none;
 }
 
 .output p.sent   { color: #888; }
