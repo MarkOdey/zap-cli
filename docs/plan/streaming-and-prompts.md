@@ -6,7 +6,9 @@ go-ahead.** The authoritative, cross-repo plan is
 tasks (its Phase 2 and Phase 5). Design: `docs/design/streaming-and-prompts.md`.
 
 Decisions in force: HLS preview is built; missions surface as a quiet panel plus
-an opt-in "nudge" toast; broadcast audio is real (engine excludes silent clips).
+an opt-in "nudge" toast; broadcast audio is real (engine excludes silent clips);
+missions are authored by a **local LLM agent (Ollama, server-side)** with a
+**runtime-editable prompt bank** the client manages.
 
 Branch: `claude/streaming-agent-prompts-edy4hq`. Tests: `node --test
 "test/**/*.test.js"`.
@@ -58,15 +60,22 @@ in-browser; stream key never reaches the client; panel reflects `broadcast:state
   - **Nudge toggle:** a per-user setting persisted in `localStorage` (mirror the
     `zap:sound` pattern in `useSession`) that, when on, briefly surfaces a mission
     as a dismissible toast/overlay between items. Never a modal over playing media.
-- [ ] **`App.vue`** — mount `MissionPanel`; add a left-column button (e.g.
-  `fa-lightbulb`) that badges when an open mission exists.
+- [ ] **`components/PromptBankPanel.vue`** (new) — runtime bank admin: list / add /
+  edit / remove prompts and trigger `seed`, via `run('prompt', { op, ... })`. Each
+  row edits `text`, `accepts[]`, `terms[]`, `enabled`. Collapsible like
+  `QueuePanel`. (Curates the bank that steers the server-side Ollama agent and
+  stands in when it's offline; the LLM itself is not configured here.)
+- [ ] **`App.vue`** — mount `MissionPanel` (+ `PromptBankPanel`); add a left-column
+  button (e.g. `fa-lightbulb`) that badges when an open mission exists.
 
 **Tests:** `test/mission.test.js` — `answerMission` payload shaping (text vs
-file→key), accepts-based affordance selection, nudge preference read/write.
+file→key), accepts-based affordance selection, nudge preference read/write;
+prompt-bank op payloads.
 
 **Acceptance:** an open mission appears in the panel; answering submits and clears
 it; the nudge toggle controls occasional surfacing and playback continues
-underneath throughout.
+underneath throughout; the prompt bank can be edited from the client without a
+redeploy.
 
 ---
 

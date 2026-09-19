@@ -5,8 +5,11 @@ This is the `zap-cli` (Vue client) surface for two features. The authoritative,
 engine-side design lives in **`zap-api/docs/design/streaming-and-prompts.md`** —
 read that first; this covers only what changes in the browser client.
 
-Decisions taken: generic RTMP (YouTube-ready) for streaming; local/template
-generator for prompts.
+Decisions taken: generic RTMP (YouTube-ready) for streaming; a **local LLM agent
+(Ollama)** generates broad open-ended prompts server-side, with a **runtime-
+editable prompt bank** the client manages (the bank is fallback + your own pinned
+prompts). The LLM itself is entirely server-side — the client only shows missions
+and edits the bank.
 
 ---
 
@@ -78,16 +81,22 @@ No new store is needed — `broadcastState` in `useSession` is enough.
     `localStorage`, like the sound preference) additionally surfaces a mission as a
     brief, dismissible toast/overlay between items now and then. **Never** a modal
     over playing media — playback always continues underneath.
-- **`App.vue`:** mount `MissionPanel`; add a mission button to the left-edge
-  column (e.g. `fa-lightbulb` / `fa-flag`) that badges when an open mission
-  exists.
+- **`components/PromptBankPanel.vue`** (new): the runtime bank admin — list, add,
+  edit, remove prompts and trigger `seed`, all via `run('prompt', { op, ... })`.
+  This is the "runtime collection + UI" authoring decision; each prompt has `text`,
+  `accepts[]`, `terms[]`, `enabled`. Collapsible, like `QueuePanel`. The LLM agent
+  runs server-side (Ollama) and is not touched here — this panel curates the bank
+  that steers it and stands in when it's offline.
+- **`App.vue`:** mount `MissionPanel` (+ `PromptBankPanel`); add a mission button
+  to the left-edge column (e.g. `fa-lightbulb` / `fa-flag`) that badges when an
+  open mission exists.
 
 ---
 
 ## Files — `zap-cli`
 
 New: `components/BroadcastPanel.vue`, `components/MissionPanel.vue`,
-`stores/mission.js`.
+`components/PromptBankPanel.vue`, `stores/mission.js`.
 
 Edited: `composables/useSession.js` (two `socket.on` handlers + verbs),
 `App.vue` (mount panels + two control buttons), `scss/theme.scss` if any shared
