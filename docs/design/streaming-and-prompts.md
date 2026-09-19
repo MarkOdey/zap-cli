@@ -81,11 +81,14 @@ No new store is needed — `broadcastState` in `useSession` is enough.
     `localStorage`, like the sound preference) additionally surfaces a mission as a
     brief, dismissible toast/overlay between items now and then. **Never** a modal
     over playing media — playback always continues underneath.
-- **Theme display:** `useSession` handles `theme:state` → a `theme` ref; the
-  current time-aware theme (label like "🎃 Halloween", generated hourly server-
-  side) shows in the `MissionPanel` header so the seasonal steering is visible. The
-  theme itself is computed server-side (calendar facts + Ollama); the client only
-  displays it.
+- **Theme display + schedule editor:** `useSession` handles `theme:state` → a
+  `theme` ref; the current theme (label + **domain**, e.g. "🎃 Halloween" or
+  "🕯 Philosophy · Free will", generated hourly server-side) shows in the
+  `MissionPanel` header. A lightweight editor lets the operator view/edit the
+  **domain palette** and the **hour→domain schedule** (`run('theme', { op:
+  'getSchedule'|'setSchedule'|'setDomains' })`) — so which theme suits which hour is
+  tunable at runtime. The theme is computed server-side (calendar + schedule +
+  Ollama); the client displays and configures it.
 - **`components/PromptBankPanel.vue`** (new): the runtime bank admin — list, add,
   edit, remove prompts and trigger `seed`, all via `run('prompt', { op, ... })`.
   This is the "runtime collection + UI" authoring decision; each prompt has `text`,
