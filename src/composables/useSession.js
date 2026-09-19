@@ -54,6 +54,10 @@ const commands = ref([]);
 // Live broadcast status, pushed by the server on connect and its 2s heartbeat.
 const broadcastState = ref({ live: false });
 
+// The current open mission and the current time-aware theme, pushed by the server.
+const currentMission = ref(null);
+const theme = ref(null);
+
 /**
  * Whether sound is on. Browsers refuse to autoplay audible media until the page
  * has been interacted with, so players start muted when that refusal happens and
@@ -184,6 +188,14 @@ export function useSession() {
       broadcastState.value = s ?? { live: false };
     });
 
+    socket.on("mission:state", (s) => {
+      currentMission.value = s?.mission ?? null;
+    });
+
+    socket.on("theme:state", (s) => {
+      theme.value = s?.theme ?? null;
+    });
+
     socket.on("upload:done", (result) => {
       uploadResult.value = result;
     });
@@ -288,6 +300,48 @@ export function useSession() {
     run("broadcast", { op: "stop" });
   }
 
+  /**
+   * Run an action and resolve with its result — for actions whose reply we need
+   * (the prompt bank, mission ops). Correlates on the action name.
+   */
+  function request(action, params = {}) {
+    return new Promise((resolve) => {
+      if (!socket) return resolve({ error: "not connected" });
+      socket.emit("run", JSON.stringify({ action, params }));
+      const onDone = (r) => { if (r.action === action) { cleanup(); resolve(r.result ?? {}); } };
+      const onErr = (r) => { if (r.action === action) { cleanup(); resolve({ error: r.error }); } };
+      function cleanup() {
+        socket.off("run:done", onDone);
+        socket.off("run:error", onErr);
+      }
+      socket.on("run:done", onDone);
+      socket.on("run:error", onErr);
+    });
+  }
+
+  /**
+   * Answer the current mission. Text goes over `mission:answer`; an image/video
+   * file is uploaded (tagged with the missionKey so the server closes the mission).
+   * `answer` is `{ text }` or `{ meta, payload }` (payload = data URL / text).
+   */
+  function answerMission(missionKey, answer = {}) {
+    return new Promise((resolve) => {
+      if (!socket) return resolve({ ok: false, error: "not connected" });
+      if (answer.text != null) {
+        socket.emit("mission:answer", { missionKey, text: answer.text }, resolve);
+      } else if (answer.meta && answer.payload != null) {
+        socket.emit("upload", { meta: { ...answer.meta, missionKey }, data: answer.payload }, resolve);
+      } else {
+        resolve({ ok: false, error: "no answer provided" });
+      }
+    });
+  }
+
+  /** Dismiss a mission the user does not want to answer. */
+  function dismissMission(key) {
+    return request("mission", { op: "dismiss", key });
+  }
+
   function logLocal(entry) {
     log(entry);
   }
@@ -371,6 +425,11 @@ export function useSession() {
     broadcastState,
     startBroadcast,
     stopBroadcast,
+    currentMission,
+    theme,
+    answerMission,
+    dismissMission,
+    request,
   };
 }
 

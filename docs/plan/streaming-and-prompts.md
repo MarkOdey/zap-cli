@@ -46,7 +46,11 @@ in-browser; stream key never reaches the client; panel reflects `broadcast:state
 
 ---
 
-## Phase 5 — Mission panel (engine Phases 3–4 must land first)
+## Phase 5 — Mission panel (engine Phases 3–4 must land first) ✅ DONE
+
+Implemented; existing client tests still green (52). Mission state is kept in the
+`useSession` composable (shared ref, like `broadcastState`) rather than a separate
+Pinia store — simpler and consistent with the other pushed state.
 
 - [ ] **`stores/mission.js`** (new, small) — `currentMission` + status helpers,
   separate from `stores/media.js` so a mission never touches playback state.
