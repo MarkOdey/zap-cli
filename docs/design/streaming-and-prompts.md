@@ -47,9 +47,10 @@ Streaming runs entirely server-side; the client only **controls and monitors** i
 - **`App.vue`:** mount `BroadcastPanel`; add a broadcast control button to the
   left-edge button column (same style as `.explore-btn` etc., e.g. a
   `fa-broadcast-tower` / `fa-tower-cell` icon) that reflects live state.
-- **Optional (only if the engine's HLS preview is built):** a small `<video>`
-  monitor in the panel pointed at `/broadcast/live.m3u8`, so the operator can see
-  what's going out without opening YouTube. Off by default.
+- **HLS monitor (in scope — decided):** a small `<video>` monitor in the panel
+  pointed at `/broadcast/live.m3u8`, so the operator sees exactly what's going out
+  without opening YouTube. Uses native HLS where available (Safari/iOS) with
+  `hls.js` as the fallback for other browsers. Collapsible; muted by default.
 
 No new store is needed — `broadcastState` in `useSession` is enough.
 
@@ -72,9 +73,11 @@ No new store is needed — `broadcastState` in `useSession` is enough.
   text, the file picker (reusing `UploadPanel`'s Android-friendly picker logic)
   for image/video. A **Dismiss** action (`run('mission', { op: 'dismiss', key })`)
   and a **Skip/Next mission** action.
-  - **Non-intrusive by design:** a dismissible panel/toast, **never** a modal over
-    the player. Playback continues underneath. This is one of the open questions
-    for sign-off (engine doc §4.4) — quiet panel vs. occasional surfaced prompt.
+  - **Surfacing (decided — both, toggleable):** a quiet, dismissible panel with a
+    badge is always available; a per-user "nudge me" setting (persisted in
+    `localStorage`, like the sound preference) additionally surfaces a mission as a
+    brief, dismissible toast/overlay between items now and then. **Never** a modal
+    over playing media — playback always continues underneath.
 - **`App.vue`:** mount `MissionPanel`; add a mission button to the left-edge
   column (e.g. `fa-lightbulb` / `fa-flag`) that badges when an open mission
   exists.
