@@ -15,9 +15,12 @@ Branch: `claude/streaming-agent-prompts-edy4hq`. Tests: `node --test
 
 ---
 
-## Phase 2 — Broadcast control & HLS monitor (engine Phase 1 must land first)
+## Phase 2 — Broadcast control & HLS monitor (engine Phase 1 must land first) ✅ DONE
 
-- [ ] **`composables/useSession.js`**
+Implemented; existing client tests still green (52). Live HLS playback needs a
+running broadcast to see, but the panel/wiring are in place.
+
+- [x] **`composables/useSession.js`**
   - `socket.on('broadcast:state', …)` → a shared `broadcastState` ref
     `{ live, uptime, currentKey, target, segmentsAhead, lastError }` (key already
     masked server-side).

@@ -51,6 +51,9 @@ const tasks = ref([]);
 const pending = ref(0);
 const commands = ref([]);
 
+// Live broadcast status, pushed by the server on connect and its 2s heartbeat.
+const broadcastState = ref({ live: false });
+
 /**
  * Whether sound is on. Browsers refuse to autoplay audible media until the page
  * has been interacted with, so players start muted when that refusal happens and
@@ -177,6 +180,10 @@ export function useSession() {
       tasks.value = t;
     });
 
+    socket.on("broadcast:state", (s) => {
+      broadcastState.value = s ?? { live: false };
+    });
+
     socket.on("upload:done", (result) => {
       uploadResult.value = result;
     });
@@ -269,6 +276,18 @@ export function useSession() {
     socket?.emit("run", JSON.stringify({ action, params }));
   }
 
+  /** Start the live broadcast. url/key are optional when the server has RTMP_* set. */
+  function startBroadcast({ url, key } = {}) {
+    const params = { op: "start" };
+    if (url) params.url = url;
+    if (key) params.key = key;
+    run("broadcast", params);
+  }
+
+  function stopBroadcast() {
+    run("broadcast", { op: "stop" });
+  }
+
   function logLocal(entry) {
     log(entry);
   }
@@ -349,6 +368,9 @@ export function useSession() {
     logLocal,
     soundOn,
     setSound,
+    broadcastState,
+    startBroadcast,
+    stopBroadcast,
   };
 }
 
