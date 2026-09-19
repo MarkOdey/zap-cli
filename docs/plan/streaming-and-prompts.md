@@ -65,6 +65,9 @@ in-browser; stream key never reaches the client; panel reflects `broadcast:state
   row edits `text`, `accepts[]`, `terms[]`, `enabled`. Collapsible like
   `QueuePanel`. (Curates the bank that steers the server-side Ollama agent and
   stands in when it's offline; the LLM itself is not configured here.)
+- [ ] **Theme display** — `useSession` handles `theme:state` → a `theme` ref; show
+  the current theme label (e.g. "🎃 Halloween") in the `MissionPanel` header, so
+  the server's hourly seasonal steering is visible to the user.
 - [ ] **`App.vue`** — mount `MissionPanel` (+ `PromptBankPanel`); add a left-column
   button (e.g. `fa-lightbulb`) that badges when an open mission exists.
 
