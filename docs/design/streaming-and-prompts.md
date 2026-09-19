@@ -87,8 +87,10 @@ No new store is needed — `broadcastState` in `useSession` is enough.
   `MissionPanel` header. A lightweight editor lets the operator view/edit the
   **domain palette** and the **hour→domain schedule** (`run('theme', { op:
   'getSchedule'|'setSchedule'|'setDomains' })`) — so which theme suits which hour is
-  tunable at runtime. The theme is computed server-side (calendar + schedule +
-  Ollama); the client displays and configures it.
+  tunable at runtime. The theme is computed server-side (recurrence over the play
+  log first, then schedule + calendar, then Ollama); the client displays and
+  configures it. A recurrence-derived theme may have no clean domain — show the
+  label alone.
 - **`components/PromptBankPanel.vue`** (new): the runtime bank admin — list, add,
   edit, remove prompts and trigger `seed`, all via `run('prompt', { op, ... })`.
   This is the "runtime collection + UI" authoring decision; each prompt has `text`,
