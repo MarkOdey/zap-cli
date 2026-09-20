@@ -28,6 +28,12 @@
 
     <QueuePanel />
 
+    <BroadcastPanel />
+
+    <MissionPanel />
+
+    <PromptBankPanel />
+
     <button
       class="sound-btn"
       :class="{ off: !soundOn }"
@@ -81,6 +87,9 @@
 import { computed, onMounted } from 'vue'
 import AppreciationControls from './components/AppreciationControls.vue'
 import AudioPlayer from './components/AudioPlayer.vue'
+import BroadcastPanel from './components/BroadcastPanel.vue'
+import MissionPanel from './components/MissionPanel.vue'
+import PromptBankPanel from './components/PromptBankPanel.vue'
 import ImagePlayer from './components/ImagePlayer.vue'
 import TerminalPanel from './components/TerminalPanel.vue'
 import TextPlayer from './components/TextPlayer.vue'
